@@ -1,34 +1,34 @@
 -- FABRICATED VALUES!!!
 local type_custom = typeof
 if not LPH_OBFUSCATED then
-    LPH_JIT = function(...)
-        return ...;
-    end;
-    LPH_JIT_MAX = function(...)
-        return ...;
-    end;
-    LPH_NO_VIRTUALIZE = function(...)
-        return ...;
-    end;
-    LPH_NO_UPVALUES = function(f)
-        return (function(...)
-            return f(...);
-        end);
-    end;
-    LPH_ENCSTR = function(...)
-        return ...;
-    end;
-    LPH_ENCNUM = function(...)
-        return ...;
-    end;
-    LPH_ENCFUNC = function(func, key1, key2)
-        if key1 ~= key2 then return print("LPH_ENCFUNC mismatch") end
-        return func
-    end
-    LPH_CRASH = function()
-        return print(debug.traceback());
-    end;
-    SWG_DiscordUser  = "swim"
+	LPH_JIT = function(...)
+		return ...;
+	end;
+	LPH_JIT_MAX = function(...)
+		return ...;
+	end;
+	LPH_NO_VIRTUALIZE = function(...)
+		return ...;
+	end;
+	LPH_NO_UPVALUES = function(f)
+		return (function(...)
+			return f(...);
+		end);
+	end;
+	LPH_ENCSTR = function(...)
+		return ...;
+	end;
+	LPH_ENCNUM = function(...)
+		return ...;
+	end;
+	LPH_ENCFUNC = function(func, key1, key2)
+		if key1 ~= key2 then return print("LPH_ENCFUNC mismatch") end
+		return func
+	end
+	LPH_CRASH = function()
+		return print(debug.traceback());
+	end;
+    SWG_DiscordUser = "swim"
     SWG_DiscordID = 1337
     SWG_Private = true
     SWG_Dev = false
@@ -44,61 +44,64 @@ local workspace = cloneref(game:GetService("Workspace"))
 local Players = cloneref(game:GetService("Players"))
 local RunService = cloneref(game:GetService("RunService"))
 local Lighting = cloneref(game:GetService("Lighting"))
-local UserInputService = cloneref(game:GetService("User InputService"))
+local UserInputService = cloneref(game:GetService("UserInputService"))
 local HttpService = cloneref(game:GetService("HttpService"))
 local GuiInset = cloneref(game:GetService("GuiService")):GetGuiInset()
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 local Camera = workspace.CurrentCamera
 
--- Function to handle touch input
-local function onTouchInput(input, gameProcessedEvent)
-    if gameProcessedEvent then return end
-
-    if input.UserInputType == Enum.UserInputType.Touch then
-        -- Handle touch input here
-        local touchPosition = input.Position
-        -- Example: Move character or UI element based on touch position
+local function getfile(name)
+    local repo = "https://raw.githubusercontent.com/SWIMHUBISWIMMING/swimhub/main/"
+    local success, content = pcall(game.HttpGet, game, repo..name)
+    if success then return content else return print("getfile returned error \""..content.."\"") end
+end
+local function isswimhubfile(file)
+    return isfile("swimhub/new/files/"..file)
+end
+local function readswimhubfile(file)
+    if not isswimhubfile(file) then return false end
+    local success, returns = pcall(readfile, "swimhub/new/files/"..file)
+    if success then return returns else return print(returns) end
+end
+local function loadswimhubfile(file)
+    if not isswimhubfile(file) then return false end
+    local success, returns = pcall(loadstring, readswimhubfile(file))
+    if success then return returns else return print(returns) end
+end
+local function getswimhubasset(file)
+    if isswimhubfile(file) then return false end
+    local success, returns = pcall(getcustomasset, "swimhub/new/files/"..file)
+    if success then return returns else return print(returns) end
+end
+do
+    if not isfolder("swimhub") then makefolder("swimhub") end
+    if not isfolder("swimhub/new") then makefolder("swimhub/new") end
+    if not isfolder("swimhub/new/files") then makefolder("swimhub/new/files") end
+    local function getfiles(force, list)
+        for _, file in list do
+            if (force or not force and not isswimhubfile(file)) then
+                writefile("swimhub/new/files/"..file, getfile(file))
+            end
+        end
     end
-end
-
-User InputService.InputBegan:Connect(onTouchInput)
-
--- Create mobile UI
-local function createMobileUI()
-    -- Create buttons and other UI elements
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(0.2, 0, 0.1, 0) -- Adjust size for mobile
-    button.Position = UDim2.new(0.4, 0, 0.9, 0) -- Centered at the bottom
-    button.Text = "Action"
-    button.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui
-
-    button.MouseButton1Click:Connect(function()
-        -- Handle button click
-    end)
-end
-
-createMobileUI()
-
--- Virtual Joystick
-local joystick = Instance.new("Frame")
-joystick.Size = UDim2.new(0.2, 0, 0.2, 0)
-joystick.Position = UDim2.new(0.1, 0, 0.7, 0)
-joystick.BackgroundColor3 = Color3.new(0, 0, 0)
-joystick.Parent = game.Players.LocalPlayer.PlayerGui.ScreenGui
-
-local function onTouchMoved(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        local delta = input.Position - joystick.Position
-        -- Move the character based on joystick input
+    local gotassets = getfile("assets.json")
+    local assets = HttpService:JSONDecode(gotassets)
+    local localassets = readswimhubfile("assets.json")
+    if localassets then
+        localassets = HttpService:JSONDecode(localassets)
+        if localassets.version ~= assets.version then
+            writefile("swimhub/new/files/assets.json", gotassets)
+            getfiles(true, assets.list)
+        end
+    else
+        writefile("swimhub/new/files/assets.json", gotassets)
     end
+    getfiles(false, assets.list)
 end
 
-User InputService.InputChanged:Connect(onTouchMoved)
+-- swimhub main
 
--- Existing functions for file handling, cheat library, etc.
-
--- Main cheat functionality
 local cheat = {
     Library = nil,
     Toggles = nil,
@@ -191,12 +194,9 @@ cheat.utility = {} do
     end
 end
 
--- Load libraries and other functionalities
 cheat.Library, cheat.Toggles, cheat.Options = loadswimhubfile("library_main.lua")()
 cheat.ThemeManager = loadswimhubfile("library_theme.lua")()
 cheat.SaveManager = loadswimhubfile("library_save.lua")()
-
--- UI setup
 local ui = {
     window = cheat.Library:CreateWindow({
         Title=string.format(
@@ -831,14 +831,14 @@ cheat.EspLibrary = {}; LPH_NO_VIRTUALIZE(function()
 end)();
 
 local aimbot = {
-    enabled = false,
+    enabled = true,
     camera = false,
-    silent = true, -- camera, silent
-    sleep_check = false,
-    team_check = false,
+    silent = false, -- camera, silent
+    sleep_check = true,
+    team_check = true,
     part = "Head",
-    manipulation = false,
-    manipulation_range = 5
+    manipulation = true,
+    manipulation_range = 10,
     fov = false,
     fov_show = false,
     fov_color = Color3.new(1, 1, 1),
@@ -848,16 +848,16 @@ local aimbot = {
     indicator = false,
     indicator_text = "",
     jumpshoot = false,
-    noslowdown = false,
-    nospread = false,
-    forcehead = false,
-    invis = false,
-    mathhuge = false,
+    noslowdown = true,
+    nospread = true,
+    forcehead = true,
+    invis = true,
+    mathhuge = true,
     hitboxes = true,
-    hbbypass = false,
+    hbbypass = true,
     instant = false,
     fly = false,
-    silentwalk = false,
+    silentwalk = false
 }
 
 do
@@ -918,11 +918,11 @@ do
     hbb:AddSlider('hitbox_head_transparency', { Text = 'transparency', Default = 0.5, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(State)
         hitboxheadtransparency = State
     end)
-    hbb:AddSlider('hitbox_head_size_x', { Text = 'size x', Default = 10, Min = 1, Max = 15, Rounding = 1, Compact = false }):OnChanged(function(State)
+    hbb:AddSlider('hitbox_head_size_x', { Text = 'size x', Default = 15, Min = 1, Max = 15, Rounding = 1, Compact = false }):OnChanged(function(State)
         hitboxheadsizex = State
         hbsize = _Vector3new(hitboxheadsizex, hitboxheadsizey, hitboxheadsizex)
     end)
-    hbb:AddSlider('hitbox_head_size_y', { Text = 'size y', Default = 10, Min = 1, Max = 15, Rounding = 1, Compact = false }):OnChanged(function(State)
+    hbb:AddSlider('hitbox_head_size_y', { Text = 'size y', Default = 15, Min = 1, Max = 15, Rounding = 1, Compact = false }):OnChanged(function(State)
         hitboxheadsizey = State
         hbsize = _Vector3new(hitboxheadsizex, hitboxheadsizey, hitboxheadsizex)
     end)
@@ -948,7 +948,7 @@ do
     })
     espb:AddToggle('espswitch', {
         Text = 'enable esp',
-        Default = false,
+        Default = true,
         Callback = function(first)
             es.enabled = first
             cheat.EspLibrary.icaca()
@@ -956,7 +956,7 @@ do
     })
     espb:AddToggle('espteamswitch', {
         Text = 'team/ai check',
-        Default = false,
+        Default = true,
         Callback = function(first)
             cheat.EspLibrary.main_settings.teamcheck = first
             cheat.EspLibrary.icaca()
@@ -964,7 +964,7 @@ do
     })
     espb:AddToggle('espsleeperswitch', {
         Text = 'sleeper check',
-        Default = false,
+        Default = true,
         Callback = function(first)
             cheat.EspLibrary.main_settings.sleepcheck = first
             cheat.EspLibrary.icaca()
@@ -1045,7 +1045,7 @@ do
     ----------------------------------------------------------
     espb:AddToggle('esprealname', {
         Text = 'name esp',
-        Default = false,
+        Default = true,
         Callback = function(first)
             es.realname = first
             cheat.EspLibrary.icaca()
@@ -1088,7 +1088,7 @@ do
     ----------------------------------------------------------
     espb:AddToggle('espdistance', {
         Text = 'distance esp',
-        Default = false,
+        Default = true,
         Callback = function(first)
             es.dist = first
             cheat.EspLibrary.icaca()
@@ -1130,7 +1130,7 @@ do
     ----------------------------------------------------------
     espb:AddToggle('espweapon', {
         Text = 'weapon esp',
-        Default = false,
+        Default = true,
         Callback = function(first)
             es.weapon = first
             cheat.EspLibrary.icaca()
@@ -1417,7 +1417,7 @@ end
 do
     local WorldTab = ui.box.world:AddTab("world visuals")
     local time = 12
-    local timechanger = false
+    local timechanger = true
     WorldTab:AddToggle('enabletimechanger', {Text = 'enable time changer',Default = false,Callback = function(first)
         timechanger = first
     end})
@@ -1783,9 +1783,9 @@ do
     local top = workspace.Const.Ignore.LocalCharacter.Top
     local originalprismcframe = top.Prism1.CFrame
     local pos = middle.CFrame
-    mvb:AddToggle('longneck', {Text = 'long neck',Default = false,Callback = function(first)
+    mvb:AddToggle('longneck', {Text = 'long neck',Default = true,Callback = function(first)
         top.Prism1.CFrame = first and originalprismcframe - Vector3.yAxis * 5 or originalprismcframe
-    end}):AddKeyPicker('longneck_bind', {Default = 'None',SyncToggleState = true,Mode = 'Toggle',Text = 'long neck',NoUI = false})
+    end}):AddKeyPicker('longneck_bind', {Default = 'L',SyncToggleState = true,Mode = 'Toggle',Text = 'long neck',NoUI = false})
     mvb:AddToggle('freecam_enabled', {Text = 'freecam enabled',Default = false,Callback = function(first)
         enabled = first
         middle.CanCollide = not first
@@ -1827,7 +1827,7 @@ end
 do
     local mvb = ui.box.atvfly:AddTab('atv fly')
     local carfly_enabled, speed, accel, upspeed = false, 55, 100, 15
-    mvb:AddToggle('carfly_enabled', {Text = 'car fly enabled',Default = false,Callback = function(first)
+    mvb:AddToggle('carfly_enabled', {Text = 'car fly enabled',Default = true,Callback = function(first)
         carfly_enabled = first
     end}):AddKeyPicker('carfly_bind', {Default = 'None',SyncToggleState = true,Mode = 'Toggle',Text = 'car fly',NoUI = false})
     mvb:AddSlider('carfly_speed',{ Text = 'speed', Default = 150, Min = 50, Max = 300, Rounding = 0, Suffix = "sps", Compact = false }):OnChanged(function(State)
@@ -1905,4 +1905,19 @@ cheat.SaveManager:SetFolder('swimhub')
 cheat.SaveManager:BuildConfigSection(ui.tabs.config)
 cheat.ThemeManager:ApplyToGroupbox(ui.box.themeconfig)
 
-cheat.EspLibrary.load()
+ui.box.misc:AddToggle('toggle_ui', {
+    Text = 'Toggle UI',
+    Default = false,
+    Callback = function(value)
+        cheat.Library:Toggle() -- Hypothetical function to toggle the UI
+    end
+}):AddKeyPicker('toggle_ui_key', {
+    Default = 'K', -- Set the key to 'K'
+    SyncToggleState = true,
+    Mode = 'Toggle',
+    Text = 'Toggle UI',
+    NoUI = false
+})
+
+-- Finalize any other necessary cleanup or settings
+cheat.EspLibrary.load() -- Ensure ESP library is loaded if not already done
