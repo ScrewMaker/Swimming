@@ -207,19 +207,6 @@ local ui = {
     Center=true,AutoShow=true,TabPadding=8})
 }
 
-local function toggleUI()
-    uiWindow.Visible = not uiWindow.Visible
-end
-
--- Bind the key press to toggle the UI
-User InputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if gameProcessedEvent then return end -- Ignore if the game is already processing this input
-
-    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.K then
-        toggleUI() -- Call the function to toggle the UI
-    end
-end)
-
 local _CFramenew = CFrame.new
 local _Vector2new = Vector2.new
 local _Vector3new = Vector3.new
@@ -876,7 +863,7 @@ local aimbot = {
 do
     local validcharacters = {}
     local hbc, original_size, hbsize = nil, trident.original_model.Head.Size, _Vector3new(0.5, 1, 0.5)
-    local dynamic, alwayshead = true, true
+    local dynamic, alwayshead = false, false
     local hitboxheadsizex, hitboxheadsizey, hitboxheadtransparency, cancollide = 10, 10, 0.5, false
     local function addtovc(obj)
         if not obj then return end
@@ -1917,5 +1904,18 @@ cheat.ThemeManager:SetFolder('swimhub')
 cheat.SaveManager:SetFolder('swimhub')
 cheat.SaveManager:BuildConfigSection(ui.tabs.config)
 cheat.ThemeManager:ApplyToGroupbox(ui.box.themeconfig)
+
+local function toggleUI()
+    uiWindow.Visible = not uiWindow.Visible
+end
+
+-- Bind the key press to toggle the UI
+User InputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end -- Ignore if the game is already processing this input
+
+    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.K then
+        toggleUI() -- Call the function to toggle the UI
+    end
+end)
 
 cheat.EspLibrary.load() -- Ensure ESP library is loaded if not already done
