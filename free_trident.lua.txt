@@ -207,6 +207,19 @@ local ui = {
     Center=true,AutoShow=true,TabPadding=8})
 }
 
+local function toggleUI()
+    uiWindow.Visible = not uiWindow.Visible
+end
+
+-- Bind the key press to toggle the UI
+User InputService.InputBegan:Connect(function(input, gameProcessedEvent)
+    if gameProcessedEvent then return end -- Ignore if the game is already processing this input
+
+    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.K then
+        toggleUI() -- Call the function to toggle the UI
+    end
+end)
+
 local _CFramenew = CFrame.new
 local _Vector2new = Vector2.new
 local _Vector3new = Vector3.new
@@ -863,7 +876,7 @@ local aimbot = {
 do
     local validcharacters = {}
     local hbc, original_size, hbsize = nil, trident.original_model.Head.Size, _Vector3new(0.5, 1, 0.5)
-    local dynamic, alwayshead = false, false
+    local dynamic, alwayshead = true, true
     local hitboxheadsizex, hitboxheadsizey, hitboxheadtransparency, cancollide = 10, 10, 0.5, false
     local function addtovc(obj)
         if not obj then return end
@@ -906,7 +919,7 @@ do
                     if primpart then
                         primpart.Size = original_size
                         primpart.Transparency = 0
-                        primpart.CanCollide = false
+                        primpart.CanCollide = true
                     end
                 end
             end
@@ -1905,19 +1918,4 @@ cheat.SaveManager:SetFolder('swimhub')
 cheat.SaveManager:BuildConfigSection(ui.tabs.config)
 cheat.ThemeManager:ApplyToGroupbox(ui.box.themeconfig)
 
-ui.box.misc:AddToggle('toggle_ui', {
-    Text = 'Toggle UI',
-    Default = false,
-    Callback = function(value)
-        cheat.Library:Toggle() -- Hypothetical function to toggle the UI
-    end
-}):AddKeyPicker('toggle_ui_key', {
-    Default = 'K', -- Set the key to 'K'
-    SyncToggleState = true,
-    Mode = 'Toggle',
-    Text = 'Toggle UI',
-    NoUI = false
-})
-
--- Finalize any other necessary cleanup or settings
 cheat.EspLibrary.load() -- Ensure ESP library is loaded if not already done
