@@ -829,32 +829,6 @@ cheat.EspLibrary = {}; LPH_NO_VIRTUALIZE(function()
     cheat.EspLibrary = esp_table
 end)();
 
-local aimbot = {
-    enabled = true, -- Set to true to enable aimbot by default
-    camera = false,
-    silent = false,
-    sleep_check = true,
-    team_check = true,
-    part = "Head",
-    manipulation = false,
-    manipulation_range = 5,
-    fov = false,
-    fov_size = 100,
-    indicator = false,
-    jumpshoot = false,
-    noslowdown = false,
-    nospread = false,
-    forcehead = true,
-    invis = false,
-    mathhuge = false,
-    hitboxes = true, -- Enable hitbox modifications
-    hbbypass = true,
-    instant = false,
-    fly = false,
-    silentwalk = false
-}
-
-do
     local validcharacters = {}
 local hbc, original_size, hbsize = nil, trident.original_model.Head.Size, _Vector3new(15, 15, 15)
 local cancollide = false
