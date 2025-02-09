@@ -1,4 +1,3 @@
--- FABRICATED VALUES!!!
 local type_custom = typeof
 if not LPH_OBFUSCATED then
 	LPH_JIT = function(...)
@@ -314,13 +313,13 @@ cheat.EspLibrary = {}; LPH_NO_VIRTUALIZE(function()
         },
         settings = {
             enemy = {
-                enabled = false,
+                enabled = true,
     
                 box = false,
                 box_fill = false,
-                realname = false,
-                dist = false,
-                weapon = false,
+                realname = true,
+                dist = true,
+                weapon = true,
                 skeleton = false,
     
                 box_outline = false,
@@ -831,29 +830,24 @@ cheat.EspLibrary = {}; LPH_NO_VIRTUALIZE(function()
 end)();
 
 local aimbot = {
-    enabled = true,
+    enabled = true, -- Set to true to enable aimbot by default
     camera = false,
-    silent = false, -- camera, silent
+    silent = false,
     sleep_check = true,
     team_check = true,
     part = "Head",
-    manipulation = true,
-    manipulation_range = 10,
+    manipulation = false,
+    manipulation_range = 5,
     fov = false,
-    fov_show = false,
-    fov_color = Color3.new(1, 1, 1),
-    fov_outline = false,
-    fov_outline_color = Color3.new(0, 0, 0),
     fov_size = 100,
     indicator = false,
-    indicator_text = "",
     jumpshoot = false,
-    noslowdown = true,
-    nospread = true,
+    noslowdown = false,
+    nospread = false,
     forcehead = true,
-    invis = true,
-    mathhuge = true,
-    hitboxes = true,
+    invis = false,
+    mathhuge = false,
+    hitboxes = true, -- Enable hitbox modifications
     hbbypass = true,
     instant = false,
     fly = false,
@@ -862,1060 +856,181 @@ local aimbot = {
 
 do
     local validcharacters = {}
-    local hbc, original_size, hbsize = nil, trident.original_model.Head.Size, _Vector3new(0.5, 1, 0.5)
-    local dynamic, alwayshead = false, false
-    local hitboxheadsizex, hitboxheadsizey, hitboxheadtransparency, cancollide = 10, 10, 0.5, false
-    local function addtovc(obj)
-        if not obj then return end
-        if not obj:FindFirstChild("Head") and not obj:FindFirstChild("LowerTorso") then return end
-        validcharacters[obj] = obj
+local hbc, original_size, hbsize = nil, trident.original_model.Head.Size, _Vector3new(15, 15, 15)
+local cancollide = false
+local hitboxheadtransparency = 0.7
+
+local function addtovc(obj)
+    if not obj then return end
+    if not obj:FindFirstChild("Head") and not obj:FindFirstChild("LowerTorso") then return end
+    validcharacters[obj] = obj
+end
+
+local function removefromvc(obj)
+    if not validcharacters[obj] then return end
+    validcharacters[obj] = nil
+end
+
+for i, v in next, workspace:GetChildren() do 
+    addtovc(v) 
+end
+
+workspace.ChildAdded:Connect(addtovc)
+workspace.ChildRemoved:Connect(removefromvc)
+
+local function enable_hitbox(true)
+    if hbc then 
+        hbc:Disconnect() 
     end
-
-    local function removefromvc(obj)
-        if not validcharacters[obj] then return end
-        validcharacters[obj] = nil
-    end
-
-    for i, v in next, workspace:GetChildren() do addtovc(v) end
-    workspace.ChildAdded:Connect(addtovc);
-    workspace.ChildRemoved:Connect(removefromvc);
-
-    local hbb = ui.box.aimbot:AddTab("hitbox")
-    hbb:AddToggle('hitbox_enabled', {
-        Text = 'hitbox expander',
-        Default = true,
-        Callback = function(value)
-            aimbot.hitboxes = value
-            if hbc then hbc:Disconnect() end
-            if value then
-                hbc = cheat.utility.new_heartbeat(function()
-                    local trans = hitboxheadtransparency
-                    for i, v in validcharacters do
-                        local primpart = v and _FindFirstChild(v, 'Head')
-                        if primpart then
-                            primpart.Size = hbsize
-                            primpart.Transparency = trans
-                            primpart.CanCollide = cancollide
-                        end
-                    end
-                end)
-            else
-                if hbc then hbc:Disconnect() end
-                for i, v in validcharacters do
-                    local primpart = v and _FindFirstChild(v, 'Head')
-                    if primpart then
-                        primpart.Size = original_size
-                        primpart.Transparency = 0
-                        primpart.CanCollide = true
-                    end
+    if value then
+        hbc = cheat.utility.new_heartbeat(function()
+            for i, v in validcharacters do
+                local primpart = v and _FindFirstChild(v, 'Head')
+                if primpart then
+                    primpart.Size = hbsize
+                    primpart.Transparency = hitboxheadtransparency
+                    primpart.CanCollide = cancollide
                 end
             end
+        end)
+    else
+        if hbc then 
+            hbc:Disconnect() 
         end
-    })
-    hbb:AddToggle('hitbox_cancollide',{Text = 'can collide',Default = false,Callback = function(v)
-        cancollide = v
-    end})
-    hbb:AddSlider('hitbox_head_transparency', { Text = 'transparency', Default = 0.5, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(State)
-        hitboxheadtransparency = State
-    end)
-    hbb:AddSlider('hitbox_head_size_x', { Text = 'size x', Default = 15, Min = 1, Max = 15, Rounding = 1, Compact = false }):OnChanged(function(State)
-        hitboxheadsizex = State
-        hbsize = _Vector3new(hitboxheadsizex, hitboxheadsizey, hitboxheadsizex)
-    end)
-    hbb:AddSlider('hitbox_head_size_y', { Text = 'size y', Default = 15, Min = 1, Max = 15, Rounding = 1, Compact = false }):OnChanged(function(State)
-        hitboxheadsizey = State
-        hbsize = _Vector3new(hitboxheadsizex, hitboxheadsizey, hitboxheadsizex)
-    end)
+        for i, v in validcharacters do
+            local primpart = v and _FindFirstChild(v, 'Head')
+            if primpart then
+                primpart.Size = original_size
+                primpart.Transparency = 0
+                primpart.CanCollide = true
+            end
+        end
+    end
 end
+ 
 do
-    local espb = ui.box.esp:AddTab("player esp")
-    local es = cheat.EspLibrary.settings.enemy
-    espb:AddDropdown('espfont', {Values = { 'UI', 'System', 'Plex', 'Monospace' },Default = 1,Multi = false,Text = 'esp font',Tooltip = 'select font',Callback = function(Value)
-        cheat.EspLibrary.main_settings.textFont = Drawing.Fonts[Value]
-        cheat.EspLibrary.icaca()
-    end})
-    espb:AddSlider('espfontsize', { Text = 'esp font size', Default = 13, Min = 1, Max = 30, Rounding = 0, Compact = true }):OnChanged(function(State)
-        cheat.EspLibrary.main_settings.textSize = State
-        cheat.EspLibrary.icaca()
-    end)
-    espb:AddToggle('espsimplecalc', {
-        Text = 'simpler corner calc (fps)',
-        Default = false,
-        Callback = function(first)
-            cheat.EspLibrary.main_settings.simplecalc = first
-            cheat.EspLibrary.icaca()
-        end
-    })
-    espb:AddToggle('espswitch', {
-        Text = 'enable esp',
-        Default = true,
-        Callback = function(first)
-            es.enabled = first
-            cheat.EspLibrary.icaca()
-        end
-    })
-    espb:AddToggle('espteamswitch', {
-        Text = 'team/ai check',
-        Default = true,
-        Callback = function(first)
-            cheat.EspLibrary.main_settings.teamcheck = first
-            cheat.EspLibrary.icaca()
-        end
-    })
-    espb:AddToggle('espsleeperswitch', {
-        Text = 'sleeper check',
-        Default = true,
-        Callback = function(first)
-            cheat.EspLibrary.main_settings.sleepcheck = first
-            cheat.EspLibrary.icaca()
-        end
-    })
-    ----------------------------------------------------------
-    espb:AddToggle('espbox', {
-        Text = 'box esp',
-        Default = false,
-        Callback = function(first)
-            es.box = first
-            cheat.EspLibrary.icaca()
-        end
-    }):AddColorPicker('espboxcolor', {
-        Default = Color3.new(1, 1, 1),
-        Title = 'box color',
-        Transparency = 0,
-        Callback = function(Value)
-            es.box_color[1] = Value
-            cheat.EspLibrary.icaca()
-        end
-    })
-    ---
-    espb:AddToggle('espboxfill', {
-        Text = 'box fill',
-        Default = false,
-        Callback = function(first)
-            es.box_fill = first
-            cheat.EspLibrary.icaca()
-        end
-    }):AddColorPicker('espboxfillcolor',
-        {
-            Default = Color3.new(1, 1, 1),
-            Title = 'box fill color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.box_fill_color[1] = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
-    ---
-    espb:AddToggle('espoutlinebox', {
-        Text = 'box outline',
-        Default = false,
-        Callback = function(first)
-            es.box_outline = first
-            cheat.EspLibrary.icaca()
-        end
-    }):AddColorPicker('espboxoutlinecolor',
-        {
-            Default = Color3.new(),
-            Title = 'box outline color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.box_outline_color[1] = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
-    ---
-    espb:AddSlider('espboxtransparency',
-        { Text = 'box transparency', Default = 0, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(
-        State)
-        es.box_color[2] = 1-State
-        cheat.EspLibrary.icaca()
-    end)
-    espb:AddSlider('espoutlineboxtransparency',
-        { Text = 'box outline transparency', Default = 0, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(
-        State)
-        es.box_outline_color[2] = State
-        cheat.EspLibrary.icaca()
-    end)
-    espb:AddSlider('espboxfilltransparency',
-        { Text = 'box fill transparency', Default = 0.5, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(
-        State)
-        es.box_fill_color[2] = 1-State
-        cheat.EspLibrary.icaca()
-    end)
-    ----------------------------------------------------------
-    espb:AddToggle('esprealname', {
-        Text = 'name esp',
-        Default = true,
-        Callback = function(first)
-            es.realname = first
-            cheat.EspLibrary.icaca()
-        end
-    }):AddColorPicker('esprealnamecolor',
-        {
-            Default = Color3.new(1, 1, 1),
-            Title = 'name color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.realname_color[1] = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
-    espb:AddSlider('esprealnametransparency',
-        { Text = 'name transparency', Default = 0, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(
-        State)
-        es.realname_color[2] = 1-State
-        cheat.EspLibrary.icaca()
-    end)
-    ---
-    espb:AddToggle('esprealnameoutline', {
-        Text = 'name outline',
-        Default = false,
-        Callback = function(first)
-            es.realname_outline = first
-            cheat.EspLibrary.icaca()
-        end
-    }):AddColorPicker('esprealnameoutlinecolor',
-        {
-            Default = Color3.new(),
-            Title = 'name outline color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.realname_outline_color = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
+    -- ESP Settings
+local es = cheat.EspLibrary.settings.enemy
+es.weapon = true
+es.dist = true
+es.realname = true
+es.weapon_color = { Color3.new(1, 1, 1), 1 }
+es.dist_color = { Color3.new(1, 1, 1), 1 }
+es.realname_color = { Color3.new(1, 1, 1), 1 }
+es.weapon_outline = true
+es.dist_outline = true
+es.realname_outline = true
+cheat.EspLibrary.icaca()
 
-    ----------------------------------------------------------
-    espb:AddToggle('espdistance', {
-        Text = 'distance esp',
-        Default = true,
-        Callback = function(first)
-            es.dist = first
-            cheat.EspLibrary.icaca()
-        end
-    }):AddColorPicker('espdistancecolor',
-        {
-            Default = Color3.new(1, 1, 1),
-            Title = 'distance color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.dist_color[1] = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
-    espb:AddSlider('espdistancetransparency',
-        { Text = 'distance transparency', Default = 0, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(
-        State)
-        es.dist_color[2] = 1-State
-        cheat.EspLibrary.icaca()
-    end)
-    ---
-    espb:AddToggle('espdistanceoutline', {
-        Text = 'distance outline',
-        Default = false,
-        Callback = function(first)
-            es.dist_outline = first
-            cheat.EspLibrary.icaca()
-        end
-    }):AddColorPicker('espdistanceoutlinecolor',
-        {
-            Default = Color3.new(),
-            Title = 'distance outline color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.dist_outline_color = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
-    ----------------------------------------------------------
-    espb:AddToggle('espweapon', {
-        Text = 'weapon esp',
-        Default = true,
-        Callback = function(first)
-            es.weapon = first
-            cheat.EspLibrary.icaca()
-        end
-    }):AddColorPicker('espweaponcolor',
-        {
-            Default = Color3.new(1, 1, 1),
-            Title = 'weapon color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.weapon_color[1] = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
-    espb:AddSlider('espweapontransparency',
-        { Text = 'weapon transparency', Default = 0, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(
-        State)
-        es.weapon_color[2] = 1-State
-        cheat.EspLibrary.icaca()
-    end)
-    ---
-    espb:AddToggle('espweaponoutline', {
-        Text = 'weapon outline',
-        Default = false,
-        Callback = function(first)
-            es.weapon_outline = first
-            cheat.EspLibrary.icaca()
-        end
-    }):AddColorPicker('espweaponoutlinecolor',
-        {
-            Default = Color3.new(),
-            Title = 'weapon outline color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.weapon_outline_color = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
-    ----------------------------------------------------------
-    espb:AddToggle('espskeleton', {Text = 'skeleton esp',Default = false,Callback = function(first)
-        es.skeleton = first
-        cheat.EspLibrary.icaca()
-    end}):AddColorPicker('espskeletoncolor', {Default = Color3.new(1, 1, 1),Title = 'skeleton color',Transparency = 0,Callback = function(Value)
-        es.skeleton_color[1] = Value
-        cheat.EspLibrary.icaca()
-    end})
-    espb:AddSlider('espskeletontransparency', { Text = 'skeleton transparency', Default = 0, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(State)
-        es.skeleton_color[2] = 1-State
-        cheat.EspLibrary.icaca()
-    end)
-    ----------------------------------------------------------
-    espb:AddToggle('espchams', {
-        Text = 'chams',
-        Default = false,
-        Callback = function(first)
-            es.chams = first
-            cheat.EspLibrary.icaca()
-        end
-    })
-    espb:AddToggle('espchamsvisibleonly', {
-        Text = 'chams visible only',
-        Default = false,
-        Callback = function(first)
-            es.chams_visible_only = first
-            cheat.EspLibrary.icaca()
-        end
-    })
-    ---
-    espb:AddLabel("chams fill color"):AddColorPicker('espchamsfillcolor',
-        {
-            Default = Color3.new(),
-            Title = 'chams fill color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.chams_fill_color[1] = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
-    espb:AddLabel("chams outline color"):AddColorPicker('espchamsoutlinecolor',
-        {
-            Default = Color3.new(),
-            Title = 'chams outline color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.chamsoutline_color[1] = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
-    ---
-    espb:AddSlider('espchamsfilltransparency',
-        { Text = 'fill transparency', Default = 0.5, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(
-        State)
-        es.chams_fill_color[2] = State
-        cheat.EspLibrary.icaca()
-    end)
-    espb:AddSlider('espchamsoutlinetransparency',
-        { Text = 'outline transparency', Default = 0, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(
-        State)
-        es.chamsoutline_color[2] = State
-        cheat.EspLibrary.icaca()
-    end)
-    ----------------------------------------------------------
-end
-do
-    local espb = ui.box.esp:AddTab("object esp")
-    local es = cheat.EspLibrary.settings.object
-    espb:AddDropdown('objectespfont', {Values = { 'UI', 'System', 'Plex', 'Monospace' },Default = 1,Multi = false,Text = 'esp font',Tooltip = 'select font',Callback = function(Value)
-        cheat.EspLibrary.main_object_settings.textFont = Drawing.Fonts[Value]
-        cheat.EspLibrary.icaca()
-    end})
-    espb:AddSlider('objectespfontsize', { Text = 'esp font size', Default = 13, Min = 1, Max = 30, Rounding = 0, Compact = true }):OnChanged(function(State)
-        cheat.EspLibrary.main_object_settings.textSize = State
-        cheat.EspLibrary.icaca()
-    end)
-    espb:AddDropdown('objectespallowed', {Values = {
-        'ATV', 'Stone', 'Nitrate', 'Iron', 'Backpack',
-        'Tree1', 'Tree2', 'Tree3', 'Tree4',
-        'TeslaPylon', 'GasTrap', 'ClaimTotem'
-    },Default = 0,Multi = true,Text = 'objects',Tooltip = 'select objects thats gonna show up',Callback = function(Value)
-        cheat.EspLibrary.main_object_settings.allowed = Value
-        cheat.EspLibrary.icaca()
-    end})
-    espb:AddToggle('objectespswitch', {
-        Text = 'enable esp',
-        Default = false,
-        Callback = function(first)
-            es.enabled = first
-            cheat.EspLibrary.icaca()
-        end
-    })
-    espb:AddToggle('objectesprealname', {
-        Text = 'name esp',
-        Default = false,
-        Callback = function(first)
-            es.realname = first
-            cheat.EspLibrary.icaca()
-        end
-    }):AddColorPicker('objectesprealnamecolor',
-        {
-            Default = Color3.new(1, 1, 1),
-            Title = 'name color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.realname_color[1] = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
-    espb:AddSlider('objectesprealnametransparency',
-        { Text = 'name transparency', Default = 0, Min = 0, Max = 1, Rounding = 1, Compact = false }):OnChanged(function(
-        State)
-        es.realname_color[2] = 1-State
-        cheat.EspLibrary.icaca()
-    end)
-    espb:AddToggle('objectesprealnameoutline', {
-        Text = 'name outline',
-        Default = false,
-        Callback = function(first)
-            es.realname_outline = first
-            cheat.EspLibrary.icaca()
-        end
-    }):AddColorPicker('objectesprealnameoutlinecolor',
-        {
-            Default = Color3.new(),
-            Title = 'name outline color',
-            Transparency = 0,
-            Callback = function(Value)
-                es.realname_outline_color = Value
-                cheat.EspLibrary.icaca()
-            end
-        })
-end
-local canuseimages = pcall(function()
-    cheat.utility.new_drawing("Image", {}):Remove()
-end) and pcall(function()
-    local a = cheat.utility.new_drawing("Image", {})
-    rawget(a, "_frame").Image = ""
-    a:Remove()
+-- Time Changer (Always Enabled)
+local time = 12
+cheat.utility.new_heartbeat(function()
+    Lighting.ClockTime = time
 end)
-do
-    local enabled, dynamic = false, false;
-    local color1, color2 = Color3.new(1,1,1), Color3.new();
-    local watermarktab = ui.box.cheatvis:AddTab("watermark")
-    local watermarktoggle = watermarktab:AddToggle('watermark_enabled', {Text = 'enabled',Default = false,Callback = function(first)
-        enabled = first
-    end})
-    watermarktoggle:AddColorPicker('watermark_color1',{Default = Color3.new(),Title = canuseimages and 'color left' or 'color',Transparency = 0,Callback = function(Value)
-        color1 = Value
-        if not canuseimages then color2 = Value end
-    end})
-    if canuseimages then watermarktoggle:AddColorPicker('watermark_color2',{Default = Color3.new(),Title = 'color right',Transparency = 0,Callback = function(Value)
-        color2 = Value
-    end}); end
-    watermarktab:AddToggle('watermark_rainbowcolor', {Text = 'rainbow',Default = false,Callback = function(first)
-        dynamic = first
-    end})
-    local leftcolor, rightcolor, watertext = 
-    Color3.new(0.000000, 0.666667, 0.333333), 
-    Color3.new(0.349020, 0.000000, 1.000000),
-    "swimhub.xyz canary | Jul 28 2024 | fps: 63 ";
-    local waterpos = Vector2.new(10, 10);
-    local text = cheat.utility.new_drawing("Text", {
-        ZIndex = 4,
-        Visible = true,
-        Transparency = 1,
-        Position = waterpos + Vector2.new(6, 5),
-        Color = Color3.new(1, 1, 1),
-        Outline = true,
-        OutlineColor = Color3.new(),
-        Font = 0,
-        Size = 14,
-        Text = watertext
-    });
-    local gradr, gradl = cheat.utility.new_drawing(canuseimages and "Image" or "Square", {
-        ZIndex = 2,
-        Visible = true,
-        Transparency = 1,
-        Position = waterpos,
-        Size = Vector2.new(text.TextBounds.X + 10, text.TextBounds.Y + 10),
-        Color = rightcolor
-    }), cheat.utility.new_drawing(canuseimages and "Image" or "Square", {
-        ZIndex = 2,
-        Visible = true,
-        Transparency = 1,
-        Position = waterpos,
-        Size = Vector2.new(text.TextBounds.X + 10, text.TextBounds.Y + 10),
-        Color = leftcolor
-    });
-    local gradbackground = cheat.utility.new_drawing("Square", {
-        ZIndex = 1,
-        Visible = true,
-        Transparency = 1,
-        Position = waterpos,
-        Size = Vector2.new(text.TextBounds.X + 10, text.TextBounds.Y + 10),
-        Color = leftcolor:Lerp(rightcolor, 0.5),
-        Filled = true
-    });
-    local textbackground = cheat.utility.new_drawing("Square", {
-        ZIndex = 3,
-        Visible = true,
-        Transparency = 0.337,
-        Position = waterpos + Vector2.new(2, 2),
-        Size = Vector2.new(text.TextBounds.X + 6, text.TextBounds.Y + 6),
-        Color = Color3.new(0,0,0),
-        Filled = true,
-        Thickness = 0,
-    });
-    if canuseimages then rawget(gradr, "_frame").Image = getcustomasset("swimhub/new/files/grad90r.png"); end
-    if canuseimages then rawget(gradl, "_frame").Image = getcustomasset("swimhub/new/files/grad90l.png"); end
-    local hue1, hue2, fpstimer, fps, finalfps = 0, 0.15, tick(), 0, 60;
-    cheat.utility.new_renderstepped(LPH_JIT_MAX(function(delta)
-        fps = fps + 1;
-        if fpstimer + 1 <= tick() then
-            fpstimer = tick();
-            finalfps = fps;
-            fps = 0;
-        end;
-        hue1, hue2 = tick() % 1, tick() % 1 + 0.15;
-        if hue1 >= 1 then hue1 = 0 end if hue2 >= 1 then hue2 = 0 end
-        rightcolor = dynamic and Color3.fromHSV(hue1, 1, 1) or color2;
-        leftcolor = dynamic and Color3.fromHSV(hue2, 1, 1) or color1;
-        watertext = ("swimhub %s | %s | %s | %s fps"):format(SWG_Version, SWG_ShortName, os.date("%b %d %Y"), tostring(finalfps));
-        gradr.Color = rightcolor;
-        gradl.Color = leftcolor;
-        gradbackground.Color = gradr.Color:Lerp(gradl.Color, 0.5);
-        textbackground.Size = Vector2.new(text.TextBounds.X + 7, text.TextBounds.Y + 6);
-        textbackground.Position = waterpos + Vector2.new(2, 2);
-        gradbackground.Size = Vector2.new(text.TextBounds.X + 11, text.TextBounds.Y + 10);
-        gradbackground.Position = waterpos;
-        gradl.Position = waterpos;
-        gradl.Size = Vector2.new(text.TextBounds.X + 11, text.TextBounds.Y + 10);
-        gradr.Position = waterpos;
-        gradr.Size = Vector2.new(text.TextBounds.X + 11, text.TextBounds.Y + 10);
-        text.Position = waterpos + Vector2.new(6, 5);
-        text.Text = watertext;
 
-        text.Visible = enabled;
-        gradl.Visible = enabled;
-        gradr.Visible = enabled;
-        gradbackground.Visible = enabled;
-        textbackground.Visible = enabled;
-    end))
-end
+-- Keybind toggles
+local toggles = {
+    longneck = false,
+    fakecrouch = false,
+    freecam = false,
+    carfly = true
+}
 
-do
-    local WorldTab = ui.box.world:AddTab("world visuals")
-    local time = 12
-    local timechanger = true
-    WorldTab:AddToggle('enabletimechanger', {Text = 'enable time changer',Default = false,Callback = function(first)
-        timechanger = first
-    end})
-    WorldTab:AddSlider('timechanger',{ Text = 'time changer', Default = mathround(Lighting.ClockTime), Min = 0, Max = 24, Rounding = 1, Compact = false }):OnChanged(function(State)
-        time = State
-    end)
-    cheat.utility.new_heartbeat(function()
-        if timechanger then
-            Lighting.ClockTime = time
-        end
-    end)
-end
-
-do
-    local cursor = {
-        Enabled = false,
-        CustomPos = false,
-        Position = _Vector2new(0, 0),
-        Speed = 5,
-        Radius = 25,
-        Color = Color3.fromRGB(180, 50, 255),
-        Thickness = 1.7,
-        Outline = false,
-        Resize = false,
-        Dot = false,
-        Gap = 10,
-        TheGap = false,
-        Font = Drawing.Fonts.Monospace,
-        Text = {
-            Logo = false,
-            LogoColor = Color3.new(1, 1, 1),
-            Name = false,
-            NameColor = Color3.new(1, 1, 1),
-            LogoFadingOffset = 0,
-        }
-    }
-    local CrosshairTab = ui.box.world:AddTab("crosshair")
-    cursor.rainbow = false
-    cursor.sussy = false
-    CrosshairTab:AddDropdown('espfont', {Values = { 'UI', 'System', 'Plex', 'Monospace' },Default = 1,Multi = false,Text = 'esp font',Tooltip = 'select font',Callback = function(Value)
-        cursor.Font = Drawing.Fonts[Value]
-    end})
-    CrosshairTab:AddToggle('crosshairenable', {Text = 'enable crosshair',Default = false,Callback = function(first)
-        cursor.Enabled = first
-    end}):AddColorPicker('crosshaircolor', {Default = Color3.new(1, 1, 1),Title = 'crosshair color',Transparency = 0,Callback = function(Value)
-        cursor.Color = Value
-    end})
-    CrosshairTab:AddSlider('crosshairspeed', {Text = 'speed',Default = 3,Min = 0.1,Max = 15,Rounding = 1,Compact = true}):OnChanged(function(State)
-        cursor.Speed = State / 10
-    end)
-    CrosshairTab:AddSlider('crosshairradius', {Text = 'radius',Default = 25,Min = 0.1,Max = 100,Rounding = 1,Compact = true,}):OnChanged(function(State)
-        cursor.Radius = State
-    end)
-    CrosshairTab:AddSlider('crosshairthickness', {Text = 'thickness',Default = 1.5,Min = 0.1,Max = 10,Rounding = 1,Compact = true,}):OnChanged(function(State)
-        cursor.Thickness = State
-    end)
-    CrosshairTab:AddSlider('crosshairgapsize', {Text = 'gap',Default = 5,Min = 0,Max = 50,Rounding = 1,Compact = true,}):OnChanged(function(State)
-        cursor.Gap = State
-    end)
-    CrosshairTab:AddToggle('crosshairenablegap', {Text = 'math divide gap',Default = false,Callback = function(first)
-        cursor.TheGap = first
-    end})
-    CrosshairTab:AddToggle('crosshairenableoutline', {Text = 'outline',Default = false,Callback = function(first)
-        cursor.Outline = first
-    end})
-    CrosshairTab:AddToggle('crosshairenableresize', {Text = 'resize animation',Default = false,Callback = function(first)
-        cursor.Resize = first
-    end})
-    CrosshairTab:AddToggle('crosshairenabledot', {Text = 'dot',Default = false,Callback = function(first)
-        cursor.Dot = first
-    end})
-    CrosshairTab:AddToggle('crosshairenablenazi', {Text = 'sussy',Default = false,Callback = function(first)
-        cursor.sussy = first
-        end})
-        CrosshairTab:AddToggle('crosshairenablefaggot', {Text = 'rainbow',Default = false,Callback = function(first)
-        cursor.rainbow = first
-    end})
-    CrosshairTab:AddToggle('crosshairtextLogo', {Text = 'text logo',Default = false,Callback = function(first)
-        cursor.Text.Logo = first
-    end}):AddColorPicker('crosshairlogocolor', {Default = Color3.new(1, 1, 1),Title = 'logo color',Transparency = 0,Callback = function(Value)
-        cursor.Text.LogoColor = Value
-    end})
-    CrosshairTab:AddToggle('crosshairtextName', {Text = 'text name',Default = false,Callback = function(first)
-        cursor.Text.Name = first
-    end}):AddColorPicker('crosshairtextcolor', {Default = Color3.new(1, 1, 1),Title = 'text color',Transparency = 0,Callback = function(Value)
-        cursor.Text.NameColor = Value
-    end})
-    CrosshairTab:AddSlider('crosshairlogooffset', {Text = 'logo fade offset',Default = 0,Min = 0,Max = 5,Rounding = 1,Compact = true}):OnChanged(function(State)
-        cursor.Text.LogoFadingOffset = State
-    end)
-
-    -- // Initilisation
-    local lines = {}
-    -- // Drawings
-    local outline = cheat.utility.new_drawing("Square", {
-        Visible = true,
-        Size = _Vector2new(4, 4),
-        Color = Color3.fromRGB(0, 0, 0),
-        Filled = true,
-        ZIndex = 1,
-        Transparency = 1
-    })
-    --
-    local dot = cheat.utility.new_drawing("Square", {
-        Visible = true,
-        Size = _Vector2new(2, 2),
-        Color = cursor.Color,
-        Filled = true,
-        ZIndex = 2,
-        Transparency = 1
-    })
-    --
-    local logotext = cheat.utility.new_drawing("Text", {
-        Visible = false,
-        Font = cursor.Font,
-        Size = 13,
-        Color = Color3.fromRGB(138, 128, 255),
-        ZIndex = 3,
-        Transparency = 1,
-        Text = "swimhub.xyz",
-        Center = true,
-        Outline = true,
-    })
-    for i = 1, 4 do
-        local line_outline = cheat.utility.new_drawing("Line", {
-            Visible = true,
-            From = _Vector2new(200, 500),
-            To = _Vector2new(200, 500),
-            Color = Color3.fromRGB(0, 0, 0),
-            Thickness = cursor.Thickness + 2.5,
-            ZIndex = 1,
-            Transparency = 1
-        })
-        local line = cheat.utility.new_drawing("Line", {
-            Visible = true,
-            From = _Vector2new(200, 500),
-            To = _Vector2new(200, 500),
-            Color = cursor.Color,
-            Thickness = cursor.Thickness,
-            ZIndex = 2,
-            Transparency = 1
-        })
-        local naziline = cheat.utility.new_drawing("Line", {
-            Visible = true,
-            From = _Vector2new(200, 500),
-            To = _Vector2new(200, 500),
-            Color = cursor.Color,
-            Thickness = cursor.Thickness,
-            ZIndex = 2,
-            Transparency = 1
-        })
-        lines[i] = { line, line_outline, naziline }
-    end
-    local angle = 0
-    local transp = 0
-    local reverse = false
-    local function setreverse(value)
-        if reverse ~= value then
-            reverse = value
-        end
-    end
-    --
-    local pos, rainbow, rotationdegree, color = Vector2.zero, 0, 0, Color3.new()
-    local math_cos, math_atan, math_pi, math_sin = math.cos, math.atan, math.pi, math.sin
-    local function DEG2RAD(x) return x * math_pi / 180 end
-    local function RAD2DEG(x) return x * 180 / math_pi end
-    cheat.utility.new_renderstepped(LPH_NO_VIRTUALIZE(function(delta)
-        if cursor.Enabled then
-            rainbow = rainbow + (delta * 0.5)
-            if rainbow > 1.0 then rainbow = 0.0 end
-            color = Color3.fromHSV(rainbow, 1, 1)
-            if cursor.CustomPos then pos = cursor.Position else pos = _Vector2new(
-                Mouse.X,
-                Mouse.Y + GuiInset.Y) end
-            if cursor.rainbow then color = Color3.fromHSV(rainbow, 1, 1) else color = cursor.Color end
-            if transp <= 1.5 + cursor.Text.LogoFadingOffset and not reverse then
-                transp = transp + (((cursor.Speed == 0 and 1 or cursor.Speed) * 10) * delta)
-                if transp >= 1.5 + cursor.Text.LogoFadingOffset then setreverse(true) end
-            elseif reverse then
-                transp = transp - (((cursor.Speed == 0 and 1 or cursor.Speed) * 10) * delta)
-                if transp <= 0 - cursor.Text.LogoFadingOffset then setreverse(false) end
-            end
-            logotext.Position = _Vector2new(pos.X, (pos + _Vector2new(0, cursor.Radius + 5)).Y)
-            logotext.Transparency = transp
-            logotext.Visible = cursor.Text.Logo
-            logotext.Color = cursor.Text.LogoColor
-            logotext.Font = cursor.Font
-
-            if cursor.sussy then
-                local frametime = delta
-                local a = cursor.Radius - 10
-                local gamma = math_atan(a / a)
-
-                if rotationdegree >= 90 then rotationdegree = 0 end
-
-                for i = 1, 4 do
-                    local p_0 = (a * math_sin(DEG2RAD(rotationdegree + (i * 90))))
-                    local p_1 = (a * math_cos(DEG2RAD(rotationdegree + (i * 90))))
-                    local p_2 = ((a / math_cos(gamma)) * math_sin(DEG2RAD(rotationdegree + (i * 90) + RAD2DEG(gamma))))
-                    local p_3 = ((a / math_cos(gamma)) * math_cos(DEG2RAD(rotationdegree + (i * 90) + RAD2DEG(gamma))))
-
-
-                    lines[i][1].From = _Vector2new(pos.X, pos.Y)
-                    lines[i][1].To = _Vector2new(pos.X + p_0, pos.Y - p_1)
-                    lines[i][1].Color = color
-                    lines[i][1].Thickness = cursor.Thickness
-                    lines[i][1].Visible = true
-                    lines[i][3].From = _Vector2new(pos.X + p_0, pos.Y - p_1)
-                    lines[i][3].To = _Vector2new(pos.X + p_2, pos.Y - p_3)
-                    lines[i][3].Color = color
-                    lines[i][3].Thickness = cursor.Thickness
-                    lines[i][3].Visible = true
-                end
-                rotationdegree = rotationdegree + ((cursor.Speed * frametime) * 1000)
-            else
-                angle = (cursor.Speed == 0 and 0 or angle + ((cursor.Speed * 10) * delta))
-
-                if angle >= 90 then
-                    angle = 0
-                end
-
-                --
-                dot.Visible = cursor.Dot
-                dot.Color = color
-                dot.Position = _Vector2new(pos.X - 1, pos.Y - 1)
-                --
-                outline.Visible = cursor.Outline and cursor.Dot
-                outline.Position = _Vector2new(pos.X - 2, pos.Y - 2)
-                --
-
-                --
-                for index, line in pairs(lines) do
-                    index = index
-                    local x, y = {}, {}
-                    local x1, y1 = {}, {}
-                    if cursor.Resize then
-                        x = { pos.X +
-                        (math.cos(angle + (index * (math.pi / 2))) * (cursor.Radius + ((cursor.Radius * math.sin(angle)) / 9))),
-                            pos.X +
-                            (math.cos(angle + (index * (math.pi / 2))) * ((cursor.Radius - 20) - (cursor.TheGap and (((cursor.Radius - 20) * math.cos(angle)) / 4) or (((cursor.Radius - 20) * math.cos(angle)) - 4)))) }
-                        y = { pos.Y +
-                        (math.sin(angle + (index * (math.pi / 2))) * (cursor.Radius + ((cursor.Radius * math.sin(angle)) / 9))),
-                            pos.Y +
-                            (math.sin(angle + (index * (math.pi / 2))) * ((cursor.Radius - 20) - (cursor.TheGap and (((cursor.Radius - 20) * math.cos(angle)) / 4) or (((cursor.Radius - 20) * math.cos(angle)) - 4)))) }
-                        x1 = { pos.X + (math.cos(angle + (index * (math.pi / 2))) * (cursor.Radius + 1)), pos
-                        .X +
-                        (math.cos(angle + (index * (math.pi / 2))) * ((cursor.Radius - 20 + 1) - (cursor.TheGap and ((cursor.Radius - 20 + 1) / cursor.Gap) or ((cursor.Radius - 20 + 1) - cursor.Gap)))) }
-                        y1 = { pos.Y + (math.sin(angle + (index * (math.pi / 2))) * (cursor.Radius + 1)), pos
-                        .Y +
-                        (math.sin(angle + (index * (math.pi / 2))) * ((cursor.Radius - 20 + 1) - (cursor.TheGap and ((cursor.Radius - 20 + 1) / cursor.Gap) or ((cursor.Radius - 20 + 1) - cursor.Gap)))) }
-                    else
-                        x = { pos.X + (math.cos(angle + (index * (math.pi / 2))) * (cursor.Radius)), pos.X +
-                        (math.cos(angle + (index * (math.pi / 2))) * ((cursor.Radius - 20) - (cursor.TheGap and ((cursor.Radius - 20) / cursor.Gap) or ((cursor.Radius - 20) - cursor.Gap)))) }
-                        y = { pos.Y + (math.sin(angle + (index * (math.pi / 2))) * (cursor.Radius)), pos.Y +
-                        (math.sin(angle + (index * (math.pi / 2))) * ((cursor.Radius - 20) - (cursor.TheGap and ((cursor.Radius - 20) / cursor.Gap) or ((cursor.Radius - 20) - cursor.Gap)))) }
-                        x1 = { pos.X + (math.cos(angle + (index * (math.pi / 2))) * (cursor.Radius + 1)), pos
-                        .X +
-                        (math.cos(angle + (index * (math.pi / 2))) * ((cursor.Radius - 20 + 1) - (cursor.TheGap and ((cursor.Radius - 20 + 1) / cursor.Gap) or ((cursor.Radius - 20 + 1) - cursor.Gap)))) }
-                        y1 = { pos.Y + (math.sin(angle + (index * (math.pi / 2))) * (cursor.Radius + 1)), pos
-                        .Y +
-                        (math.sin(angle + (index * (math.pi / 2))) * ((cursor.Radius - 20 + 1) - (cursor.TheGap and ((cursor.Radius - 20 + 1) / cursor.Gap) or ((cursor.Radius - 20 + 1) - cursor.Gap)))) }
-                    end
-                    --
-                    line[1].Visible = true
-                    line[1].Color = color
-                    line[1].From = _Vector2new(x[2], y[2])
-                    line[1].To = _Vector2new(x[1], y[1])
-                    line[1].Thickness = cursor.Thickness
-                    --
-                    line[2].Visible = cursor.Outline
-                    line[2].From = _Vector2new(x1[2], y1[2])
-                    line[2].To = _Vector2new(x1[1], y1[1])
-                    line[2].Thickness = cursor.Thickness + 2.5
-
-                    line[3].Visible = false
-                end
-            end
+-- Input Handler
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.L then
+        toggles.longneck = not toggles.longneck
+        if toggles.longneck then
+            top.Prism1.CFrame = originalprismcframe - Vector3.yAxis * 15
         else
-            dot.Visible = false
-            outline.Visible = false
-            logotext.Visible = false
-            --
-            for index, line in pairs(lines) do
-                line[1].Visible = false
-                line[2].Visible = false
-                line[3].Visible = false
-            end
+            top.Prism1.CFrame = originalprismcframe
         end
-    end))
-end
-
-do
-    local mvb = ui.box.move:AddTab('speedhack')
-    local bhop_enabled, speed = false, 55
-    local forcesprint = false
-    mvb:AddToggle('speedhack_forcesprint', {Text = 'forcesprint',Default = false,Callback = function(first)
-        forcesprint = first
-    end})
-    mvb:AddToggle('speedhack_enabled', {Text = 'speedhack enabled',Default = false,Callback = function(first)
-        bhop_enabled = first
-    end})
-    mvb:AddSlider('speedhack_speed',{ Text = 'speed', Default = 55, Min = 55, Max = 70, Rounding = 0, Suffix = "sps", Compact = false }):OnChanged(function(State)
-        speed = State
-    end)
-    local niga, wtf = speed, 0
-    local middle = trident.middlepart
-    cheat.utility.new_renderstepped(LPH_JIT_MAX(function(delta)
-        if bhop_enabled and middle and _IsKeyDown(UserInputService, Enum.KeyCode.C) and _IsKeyDown(UserInputService, Enum.KeyCode.LeftShift) then
-            local cameralook = Camera.CFrame.LookVector
-            cameralook = _Vector3new(cameralook.X, 0, cameralook.Z)
-            local direction = Vector3.zero
-            direction = _IsKeyDown(UserInputService, Enum.KeyCode.W) and direction + cameralook or direction;
-            direction = _IsKeyDown(UserInputService, Enum.KeyCode.S) and direction - cameralook or direction;
-            direction = _IsKeyDown(UserInputService, Enum.KeyCode.D) and direction + _Vector3new(- cameralook.Z, 0, cameralook.X) or direction;
-            direction = _IsKeyDown(UserInputService, Enum.KeyCode.A) and direction + _Vector3new(cameralook.Z, 0, - cameralook.X) or direction;
-            if not (direction == Vector3.zero) then
-                direction = direction.Unit
-            end
-            niga = math.clamp(niga-delta*20, 17, speed)
-            if wtf == 0 then
-                middle.CFrame = middle.CFrame + _Vector3new(0, 6.5, 0)
-            end
-            middle.AssemblyLinearVelocity = _Vector3new(
-                direction.X * niga,
-                wtf < 0.85 and 0 or -7,
-                direction.Z * niga
-            )
-            wtf = wtf + delta
-        else
-            if forcesprint and middle then
-                local cameralook = Camera.CFrame.LookVector
-                cameralook = _Vector3new(cameralook.X, 0, cameralook.Z)
-                local direction = Vector3.zero
-                direction = _IsKeyDown(UserInputService, Enum.KeyCode.W) and direction + cameralook or direction;
-                direction = _IsKeyDown(UserInputService, Enum.KeyCode.S) and direction - cameralook or direction;
-                direction = _IsKeyDown(UserInputService, Enum.KeyCode.D) and direction + _Vector3new(- cameralook.Z, 0, cameralook.X) or direction;
-                direction = _IsKeyDown(UserInputService, Enum.KeyCode.A) and direction + _Vector3new(cameralook.Z, 0, - cameralook.X) or direction;
-                if not (direction == Vector3.zero) then
-                    direction = direction.Unit
-                end
-                middle.AssemblyLinearVelocity = _Vector3new(
-                    direction.X * 18,
-                    middle.AssemblyLinearVelocity.Y,
-                    direction.Z * 18
-                )
-            end
-            niga = speed
-            wtf = 0
-        end
-    end))
-end
-
-do
-    local mvb = ui.box.move:AddTab('exploits')
-    local enabled, speed = false, 55
-    local fakecrouch_timer = tick()
-    mvb:AddToggle('fakecrouch', {Text = 'fake crouch',Default = false,Callback = function(first)
-        aimbot.silentwalk = first
-    end}):AddKeyPicker('silentwalk_bind', {Default = 'None',SyncToggleState = true,Mode = 'Toggle',Text = 'fake crouch',NoUI = false})
-    local freecamoffset = Vector3.zero
-    local middle = workspace.Const.Ignore.LocalCharacter.Middle
-    local bottom = workspace.Const.Ignore.LocalCharacter.Bottom
-    local top = workspace.Const.Ignore.LocalCharacter.Top
-    local originalprismcframe = top.Prism1.CFrame
-    local pos = middle.CFrame
-    mvb:AddToggle('longneck', {Text = 'long neck',Default = true,Callback = function(first)
-        top.Prism1.CFrame = first and originalprismcframe - Vector3.yAxis * 5 or originalprismcframe
-    end}):AddKeyPicker('longneck_bind', {Default = 'L',SyncToggleState = true,Mode = 'Toggle',Text = 'long neck',NoUI = false})
-    mvb:AddToggle('freecam_enabled', {Text = 'freecam enabled',Default = false,Callback = function(first)
-        enabled = first
-        middle.CanCollide = not first
-        bottom.CanCollide = not first
-        top.CanCollide = not first
-    end}):AddKeyPicker('freecam_bind', {Default = 'None',SyncToggleState = true,Mode = 'Toggle',Text = 'freecam',NoUI = false})
-    mvb:AddSlider('freecam_speed',{ Text = 'speed', Default = 10, Min = 1, Max = 300, Rounding = 0, Suffix = "sps", Compact = false }):OnChanged(function(State)
-        speed = State
-    end)
-    cheat.utility.new_heartbeat(LPH_JIT_MAX(function(delta)
-        if tick() - fakecrouch_timer >= 0.15 then
-            trident.tcp:FireServer(2, true)
-            fakecrouch_timer = tick()
-        end
-        if enabled and middle then
-            middle.CFrame = pos
-            RunService.RenderStepped:Wait()
-            if middle then
-                local cameralook = Camera.CFrame.LookVector
-                local direction = Vector3.zero
-                direction = _IsKeyDown(UserInputService, Enum.KeyCode.W) and direction + cameralook or direction;
-                direction = _IsKeyDown(UserInputService, Enum.KeyCode.S) and direction - cameralook or direction;
-                direction = _IsKeyDown(UserInputService, Enum.KeyCode.D) and direction + _Vector3new(- cameralook.Z, 0, cameralook.X) or direction;
-                direction = _IsKeyDown(UserInputService, Enum.KeyCode.A) and direction + _Vector3new(cameralook.Z, 0, - cameralook.X) or direction;
-                if not direction == Vector3.zero then
-                    direction = direction.Unit
-                end
-                freecamoffset = freecamoffset + (direction * delta * speed)
-                middle.CFrame = pos + freecamoffset
-                middle.AssemblyLinearVelocity = Vector3.zero
-            end
-        elseif middle then
-            freecamoffset = Vector3.zero
-            pos = middle.CFrame
-        end
-    end))
-end
-
-do
-    local mvb = ui.box.atvfly:AddTab('atv fly')
-    local carfly_enabled, speed, accel, upspeed = false, 55, 100, 15
-    mvb:AddToggle('carfly_enabled', {Text = 'car fly enabled',Default = true,Callback = function(first)
-        carfly_enabled = first
-    end}):AddKeyPicker('carfly_bind', {Default = 'None',SyncToggleState = true,Mode = 'Toggle',Text = 'car fly',NoUI = false})
-    mvb:AddSlider('carfly_speed',{ Text = 'speed', Default = 150, Min = 50, Max = 300, Rounding = 0, Suffix = "sps", Compact = false }):OnChanged(function(State)
-        speed = State
-    end)
-    mvb:AddSlider('carfly_upspeed',{ Text = 'up speed', Default = 15, Min = 5, Max = 100, Rounding = 0, Suffix = "sps", Compact = false }):OnChanged(function(State)
-        upspeed = State
-    end)
-    mvb:AddSlider('carfly_accel',{ Text = 'acceleration', Default = 100, Min = 10, Max = 300, Rounding = 0, Suffix = "sps", Compact = false }):OnChanged(function(State)
-        accel = State
-    end)
-    mvb:AddLabel("hold V to go up")
-    mvb:AddLabel("hold B to go down")
-    local car, dist = nil, 50
-    local findcar = function()
-        car, dist = nil, 50
-        for i,v in pairs(workspace:GetChildren()) do
-            if v:FindFirstChild("Seat") and v:FindFirstChild("Frame") then
-                if (v.Frame.Position - trident.middlepart.Position).Magnitude < dist then
-                    car = v
-                    dist = (v.Frame.Position - trident.middlepart.Position).Magnitude
-                end
-            end
-        end
-    end
-    findcar()
-    local buildup = 0
-    local lastdir = _Vector3new(1,0,0)
-    cheat.utility.new_renderstepped(LPH_JIT_MAX(function(delta)
-        if carfly_enabled and car and car:FindFirstChild("Frame") and (car.Frame.CFrame.p - Camera.CFrame.p).Magnitude <= 50 then
-            local cameralook = Camera.CFrame.LookVector
-            cameralook = _Vector3new(cameralook.X, 0, cameralook.Z)
-            local direction = Vector3.zero
-            direction = _IsKeyDown(UserInputService, Enum.KeyCode.W) and direction + cameralook or direction;
-            direction = _IsKeyDown(UserInputService, Enum.KeyCode.S) and direction - cameralook or direction;
-            direction = _IsKeyDown(UserInputService, Enum.KeyCode.D) and direction + _Vector3new(- cameralook.Z, 0, cameralook.X) or direction;
-            direction = _IsKeyDown(UserInputService, Enum.KeyCode.A) and direction + _Vector3new(cameralook.Z, 0, - cameralook.X) or direction;
-            direction = _IsKeyDown(UserInputService, Enum.KeyCode.V) and direction + Vector3.yAxis or direction;
-            direction = _IsKeyDown(UserInputService, Enum.KeyCode.B) and direction - Vector3.yAxis or direction;
-            if direction ~= Vector3.zero then
-                direction = direction.Unit
-                if direction ~= Vector3.yAxis and -direction ~= Vector3.yAxis then
-                    buildup = math.clamp(buildup + delta * accel, 0, speed)
-                    lastdir = direction
-                end
-            else
-                direction = lastdir
-                buildup = math.clamp(buildup - delta * 150, 0, speed)
-            end
-            for i,v in pairs(car:GetChildren()) do
-                v.AssemblyLinearVelocity = _Vector3new(direction.X * buildup, direction.Y * upspeed, direction.Z * buildup)
-                --v.AssemblyLinearVelocity = direction * SPEED + _Vector3new(0, 0.05, 0)
-                --v.CFrame = _CFramenew(v.CFrame.Position) * CFrame.Angles(0, y+(math.pi/2), 0)
-            end
-        elseif not car or car and car:FindFirstChild("Frame") and (car.Frame.CFrame.p - Camera.CFrame.p).Magnitude > 50 then
-            findcar()
-            buildup = 0
-        else
-            buildup = 0
-        end
-    end))
-end
-loadswimhubfile("chat_spam.lua")(cheat.Library, ui.box.misc:AddTab("chat spam"), function(word)
-    trident.tcp:FireServer(23, word, "Global")
-end, 25, 100)
-
-ui.box.themeconfig:AddToggle('keybindshoww', {Text = 'show keybinds',Default = false,Callback = function(first)cheat.Library.KeybindFrame.Visible = first end})
-cheat.ThemeManager:SetOptionsTEMP(cheat.Options, cheat.Toggles)
-cheat.SaveManager:SetOptionsTEMP(cheat.Options, cheat.Toggles)
-cheat.ThemeManager:SetLibrary(cheat.Library)
-cheat.SaveManager:SetLibrary(cheat.Library)
-cheat.SaveManager:IgnoreThemeSettings()
-cheat.ThemeManager:SetFolder('swimhub')
-cheat.SaveManager:SetFolder('swimhub')
-cheat.SaveManager:BuildConfigSection(ui.tabs.config)
-cheat.ThemeManager:ApplyToGroupbox(ui.box.themeconfig)
-
-local function toggleUI()
-    uiWindow.Visible = not uiWindow.Visible
-end
-
--- Bind the key press to toggle the UI
-User InputService.InputBegan:Connect(function(input, gameProcessedEvent)
-    if gameProcessedEvent then return end -- Ignore if the game is already processing this input
-
-    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.K then
-        toggleUI() -- Call the function to toggle the UI
+    elseif input.KeyCode == Enum.KeyCode.C then
+        toggles.fakecrouch = not toggles.fakecrouch
+    elseif input.KeyCode == Enum.KeyCode.F then
+        toggles.freecam = not toggles.freecam
+        middle.CanCollide = not toggles.freecam
+        bottom.CanCollide = not toggles.freecam
+        top.CanCollide = not toggles.freecam
+    elseif input.KeyCode == Enum.KeyCode.X then
+        toggles.carfly = not toggles.carfly
     end
 end)
 
-cheat.EspLibrary.load() -- Ensure ESP library is loaded if not already done
+-- Fake Crouch & Free Cam
+local speed = 55
+local fakecrouch_timer = tick()
+local freecamoffset = Vector3.zero
+local middle = workspace.Const.Ignore.LocalCharacter.Middle
+local bottom = workspace.Const.Ignore.LocalCharacter.Bottom
+local top = workspace.Const.Ignore.LocalCharacter.Top
+local originalprismcframe = top.Prism1.CFrame
+local pos = middle.CFrame
+
+cheat.utility.new_heartbeat(function(delta)
+    if toggles.fakecrouch and tick() - fakecrouch_timer >= 0.15 then
+        trident.tcp:FireServer(2, true)
+        fakecrouch_timer = tick()
+    end
+
+    if toggles.freecam and middle then
+        middle.CFrame = pos
+        RunService.RenderStepped:Wait()
+        local cameralook = Camera.CFrame.LookVector
+        local direction = Vector3.zero
+        direction = _IsKeyDown(UserInputService, Enum.KeyCode.W) and direction + cameralook or direction
+        direction = _IsKeyDown(UserInputService, Enum.KeyCode.S) and direction - cameralook or direction
+        direction = _IsKeyDown(UserInputService, Enum.KeyCode.D) and direction + _Vector3new(-cameralook.Z, 0, cameralook.X) or direction
+        direction = _IsKeyDown(UserInputService, Enum.KeyCode.A) and direction + _Vector3new(cameralook.Z, 0, -cameralook.X) or direction
+        if direction ~= Vector3.zero then direction = direction.Unit end
+        freecamoffset = freecamoffset + (direction * delta * speed)
+        middle.CFrame = pos + freecamoffset
+        middle.AssemblyLinearVelocity = Vector3.zero
+    else
+        freecamoffset = Vector3.zero
+        pos = middle.CFrame
+    end
+end)
+
+-- ATV Fly
+local speed, accel, upspeed = 55, 100, 15
+local car, dist = nil, 50
+local function findcar()
+    car, dist = nil, 50
+    for _, v in pairs(workspace:GetChildren()) do
+        if v:FindFirstChild("Seat") and v:FindFirstChild("Frame") then
+            if (v.Frame.Position - trident.middlepart.Position).Magnitude < dist then
+                car = v
+                dist = (v.Frame.Position - trident.middlepart.Position).Magnitude
+            end
+        end
+    end
+end
+findcar()
+
+local buildup = 0
+local lastdir = _Vector3new(1, 0, 0)
+cheat.utility.new_renderstepped(function(delta)
+    if toggles.carfly and car and car:FindFirstChild("Frame") and (car.Frame.CFrame.p - Camera.CFrame.p).Magnitude <= 50 then
+        local cameralook = Camera.CFrame.LookVector
+        cameralook = _Vector3new(cameralook.X, 0, cameralook.Z)
+        local direction = Vector3.zero
+        direction = _IsKeyDown(UserInputService, Enum.KeyCode.W) and direction + cameralook or direction
+        direction = _IsKeyDown(UserInputService, Enum.KeyCode.S) and direction - cameralook or direction
+        direction = _IsKeyDown(UserInputService, Enum.KeyCode.D) and direction + _Vector3new(-cameralook.Z, 0, cameralook.X) or direction
+        direction = _IsKeyDown(UserInputService, Enum.KeyCode.A) and direction + _Vector3new(cameralook.Z, 0, -cameralook.X) or direction
+        direction = _IsKeyDown(UserInputService, Enum.KeyCode.V) and direction + Vector3.yAxis or direction
+        direction = _IsKeyDown(UserInputService, Enum.KeyCode.B) and direction - Vector3.yAxis or direction
+        if direction ~= Vector3.zero then direction = direction.Unit end
+        buildup = math.clamp(buildup + delta * accel, 0, speed)
+        for _, v in pairs(car:GetChildren()) do
+            v.AssemblyLinearVelocity = _Vector3new(direction.X * buildup, direction.Y * upspeed, direction.Z * buildup)
+        end
+    else
+        findcar()
+        buildup = 0
+    end
+end)
+
+cheat.EspLibrary.load()
