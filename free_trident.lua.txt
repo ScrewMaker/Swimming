@@ -883,7 +883,7 @@ do
     local hbb = ui.box.aimbot:AddTab("hitbox")
     hbb:AddToggle('hitbox_enabled', {
         Text = 'hitbox expander',
-        Default = false,
+        Default = true,
         Callback = function(value)
             aimbot.hitboxes = value
             if hbc then hbc:Disconnect() end
@@ -906,7 +906,7 @@ do
                     if primpart then
                         primpart.Size = original_size
                         primpart.Transparency = 0
-                        primpart.CanCollide = true
+                        primpart.CanCollide = false
                     end
                 end
             end
